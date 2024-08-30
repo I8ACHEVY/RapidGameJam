@@ -219,7 +219,7 @@ function GetHighScore()
         HighScore = LinesFrom('highscore.score')
     else
         local file = io.open('highscore.score', 'w')
-        --       f:write('0')
+        f:write('0')
         f:close()
         HighScore = { 0 }
     end

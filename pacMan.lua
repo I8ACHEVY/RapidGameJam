@@ -167,7 +167,7 @@ function pacMan:collect(item)
     end
     if Dots <= 0 then
         Level = Level + 1
-        if Level >= 3 then Level = 3 end
+        if Level >= 21 then Level = 21 end
         pacMan:init()
         Ghost_red:init()
         Ghost_red.chaseIter = 1
