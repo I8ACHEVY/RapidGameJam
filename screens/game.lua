@@ -141,7 +141,7 @@ function Game(save_data, sfx)
                 until calculateDistance(player.x, player.y, as_x, as_y) > Enemy_size * 2 + player.radius
 
                 -- pass sfx into enemies
-                table.insert(enemies, i, Enemies(as_x, as_y, Enemy_size, self.level, sfx))
+                table.insert(enemies, Enemies(as_x, as_y, Enemy_size, self.level, sfx))
             end
         end
     }

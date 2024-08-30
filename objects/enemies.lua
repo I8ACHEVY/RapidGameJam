@@ -2,17 +2,11 @@ require "globals"
 
 local love = require "love"
 
--- asteroids require sfx
-function Enemies(x, y, ast_size, level, sfx)
-    local Enemy_vert = 5
-    local Enemy_jag = 0.4
-    local Enemy_speed = math.random(0.02) + (level * 0.5)
+-- Enemies require sfx
+function Enemies(x, y, image, sfx)
+    local Enemy_speed = 0.0001
 
-    local vert = math.floor(math.random(Enemy_vert + 1) + Enemy_vert / 2)
     local offset = {}
-    for i = 1, vert + 1 do
-        table.insert(offset, math.random() * Enemy_jag * 2 + 1 - Enemy_jag)
-    end
 
     local vel = -1
     if math.random() < 0.5 then
@@ -24,7 +18,7 @@ function Enemies(x, y, ast_size, level, sfx)
         y = y,
         x_vel = math.random() * Enemy_speed * vel,
         y_vel = math.random() * Enemy_speed * vel,
-        radius = math.ceil(ast_size / 2),
+        radius = math.ceil(Eny_size / 2),
         angle = math.rad(math.random(math.pi)),
         vert = vert,
         offset = offset,
