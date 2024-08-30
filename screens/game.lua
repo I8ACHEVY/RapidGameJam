@@ -1,7 +1,7 @@
 local love = require "love"
 
 local Text = require "assets/text"
-local Asteroids = require "objects/asteroids"
+local enemies = require "objects/enemies"
 
 function Game(save_data, sfx)
     return {
@@ -118,8 +118,8 @@ function Game(save_data, sfx)
                 self:changeGameState("running")
             end
 
-            local num_asteroids = 0
-            asteroids = {}
+            local num_enemies = 0
+            enemies = {}
             self.screen_text = { Text(
                 "Level " .. self.level,
                 0,
@@ -131,17 +131,17 @@ function Game(save_data, sfx)
                 "center"
             ) }
 
-            for i = 1, num_asteroids + self.level do
+            for i = 1, num_enemies + self.level do
                 local as_x
                 local as_y
 
                 repeat
                     as_x = math.floor(math.random(love.graphics.getWidth()))
                     as_y = math.floor(math.random(love.graphics.getHeight()))
-                until calculateDistance(player.x, player.y, as_x, as_y) > ASTEROID_SIZE * 2 + player.radius
+                until calculateDistance(player.x, player.y, as_x, as_y) > Enemy_size * 2 + player.radius
 
                 -- pass sfx into asteroids
-                table.insert(asteroids, i, Asteroids(as_x, as_y, ASTEROID_SIZE, self.level, sfx))
+                table.insert(enemies, i, enemies(as_x, as_y, Enemy_size, self.level, sfx))
             end
         end
     }

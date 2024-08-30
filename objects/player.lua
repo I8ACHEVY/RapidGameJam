@@ -2,14 +2,14 @@ require "data.globals"
 
 local love = require "love"
 
-local Lazer = require "objects/lazer"
+local Bullet = require "objects/bullet"
 
 function Player(num_lives, sfx)
     local SHIP_SIZE = 30
     local EXPLOAD_DUR = 3
     local VIEW_ANGLE = math.rad(90)
-    local LAZER_DISTANCE = 0.6
-    local MAX_LAZERS = 10
+    local Bullet_distance = 0.6
+    local Max_bullets = 10
     local USABLE_BLINKS = 10 * 2
 
     return {
@@ -20,11 +20,11 @@ function Player(num_lives, sfx)
         rotation = 0,
         expload_time = 0,
         exploading = false,
-        thrusting = false,
+        moving = false,
         invincible = true,
         invincible_seen = true,
         time_blinked = USABLE_BLINKS,
-        lazers = {},
+        bullets = {},
         thrust = {
             x = 0,
             y = 0,
@@ -52,20 +52,20 @@ function Player(num_lives, sfx)
             )
         end,
 
-        shootLazer = function(self)
-            if (#self.lazers <= MAX_LAZERS) then
-                table.insert(self.lazers, Lazer(
+        shootBullet = function(self)
+            if (#self.bullets <= Max_bullets) then
+                table.insert(self.bullets, Bullet(
                     self.x + ((4 / 3) * self.radius) * math.cos(self.angle),
                     self.y - ((4 / 3) * self.radius) * math.sin(self.angle),
                     self.angle
                 ))
 
                 -- add laser sfx
-                sfx:playFX("laser")
+                sfx:playFX("bullet")
             end
         end,
 
-        destroyLazer = function(self, index)
+        destroyBullet = function(self, index)
             table.remove(self.lazers, index)
         end,
 
@@ -121,8 +121,8 @@ function Player(num_lives, sfx)
                     self.y + self.radius * (2 / 3 * math.sin(self.angle) + math.cos(self.angle))
                 )
 
-                for _, lazer in pairs(self.lazers) do
-                    lazer:draw(faded)
+                for _, bullet in pairs(self.bullets) do
+                    bullet:draw(faded)
                 end
             else
                 love.graphics.setColor(1, 0, 0)
@@ -239,7 +239,7 @@ function Player(num_lives, sfx)
             end
 
             for index, lazer in pairs(self.lazers) do
-                if (lazer.distance > LAZER_DISTANCE * love.graphics.getWidth()) and (lazer.exploading == 0) then
+                if (lazer.distance > Bullet_distance * love.graphics.getWidth()) and (lazer.exploading == 0) then
                     lazer:expload()
                 end
 

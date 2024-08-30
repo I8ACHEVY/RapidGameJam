@@ -25,7 +25,7 @@ local function reset()
     game = Game(sfx) --save_data,
     menu = Menu(game, player, sfx)
 
-    destroy_ast = false
+    destroy_enemy = false
 end
 
 function love.load()
@@ -44,11 +44,11 @@ end
 function love.keypressed(key)
     if game.state.running then
         if key == "w" or key == "up" or key == "kp8" then
-            player.thrusting = true
+            player.moving = true
         end
 
         if key == "space" or key == "down" or key == "kp5" then
-            player:shootLazer()
+            player:shootBullet()
         end
 
         if key == "escape" then
@@ -63,14 +63,14 @@ end
 
 function love.keyreleased(key)
     if key == "w" or key == "up" or key == "kp8" then
-        player.thrusting = false
+        player.moving = false
     end
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
     if button == 1 then
         if game.state.running then
-            player:shootLazer()
+            player:shootBullet()
         else
             clickedMouse = true
         end
@@ -85,11 +85,11 @@ function love.update(dt)
     if game.state.running then
         player:movePlayer(dt)
 
-        for ast_index, asteroid in pairs(asteroids) do
+        for ast_index, enemy in pairs(enemies) do
             if not player.exploading and not player.invincible then
-                if calculateDistance(player.x, player.y, asteroid.x, asteroid.y) < player.radius + asteroid.radius then
+                if calculateDistance(player.x, player.y, enemy.x, enemy.y) < player.radius + enemy.radius then
                     player:expload()
-                    destroy_ast = true
+                    destroy_enemy = true
                 end
             else
                 player.expload_time = player.expload_time - 1
@@ -105,29 +105,29 @@ function love.update(dt)
                 end
             end
 
-            for _, lazer in pairs(player.lazers) do
-                if calculateDistance(lazer.x, lazer.y, asteroid.x, asteroid.y) < asteroid.radius then
-                    lazer:expload()
-                    asteroid:destroy(asteroids, ast_index, game)
+            for _, bullet in pairs(player.bullets) do
+                if calculateDistance(bullet.x, bullet.y, enemy.x, enemy.y) < enemy.radius then
+                    bullet:expload()
+                    enemy:destroy(enemies, ast_index, game)
                 end
             end
 
-            if destroy_ast then
+            if destroy_enemy then
                 if player.lives - 1 <= 0 then
                     if player.expload_time == 0 then
-                        destroy_ast = false
-                        asteroid:destroy(asteroids, ast_index, game)
+                        destroy_enemy = false
+                        enemy:destroy(enemies, ast_index, game)
                     end
                 else
-                    destroy_ast = false
-                    asteroid:destroy(asteroids, ast_index, game)
+                    destroy_enemy = false
+                    enemy:destroy(enemies, ast_index, game)
                 end
             end
 
-            asteroid:move(dt)
+            enemy:move(dt)
         end
 
-        if #asteroids == 0 then
+        if #enemies == 0 then
             game.level = game.level + 1
             game:startNewGame(player)
         end
@@ -151,8 +151,8 @@ function love.draw()
         player:drawLives(game.state.paused)
         player:draw(game.state.paused)
 
-        for _, asteroid in pairs(asteroids) do
-            asteroid:draw(game.state.paused)
+        for _, enemy in pairs(enemies) do
+            enemy:draw(game.state.paused)
         end
 
         game:draw(game.state.paused)

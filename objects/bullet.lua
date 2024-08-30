@@ -1,14 +1,14 @@
 local love = require "love"
 
-function Lazer(x, y, angle)
-    local LAZER_SPEED = 500
+function Bullet(x, y, angle)
+    local Bullet_speed = 500
     local EXPLODE_DUR = 0.2 -- explosion duration
 
     return {
         x = x,
         y = y,
-        x_vel = LAZER_SPEED * math.cos(angle) / love.timer.getFPS(),
-        y_vel = -LAZER_SPEED * math.sin(angle) / love.timer.getFPS(),
+        x_vel = Bullet_speed * math.cos(angle) / love.timer.getFPS(),
+        y_vel = -Bullet_speed * math.sin(angle) / love.timer.getFPS(),
         distance = 0,
         -- exploading: 0 = safe; 1 = exploading; 2 = done exploading
         exploading = 0,
@@ -72,4 +72,4 @@ function Lazer(x, y, angle)
     }
 end
 
-return Lazer
+return Bullet

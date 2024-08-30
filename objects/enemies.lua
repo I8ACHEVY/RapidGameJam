@@ -3,15 +3,15 @@ require "data.globals"
 local love = require "love"
 
 -- asteroids require sfx
-function Asteroids(x, y, ast_size, level, sfx)
-    local ASTEROID_VERT = 10
-    local ASTEROID_JAG = 0.4
-    local ASTEROID_SPEED = math.random(50) + (level * 2)
+function Enemies(x, y, enemy_size, level, sfx)
+    local Enemy_vert = 10
+    local Enemy_jag = 0.4
+    local Enemy_speed = math.random(50) + (level * 2)
 
-    local vert = math.floor(math.random(ASTEROID_VERT + 1) + ASTEROID_VERT / 2)
+    local vert = math.floor(math.random(Enemy_vert + 1) + Enemy_vert / 2)
     local offset = {}
     for i = 1, vert + 1 do
-        table.insert(offset, math.random() * ASTEROID_JAG * 2 + 1 - ASTEROID_JAG)
+        table.insert(offset, math.random() * Enemy_jag * 2 + 1 - Enemy_jag)
     end
 
     local vel = -1
@@ -22,9 +22,9 @@ function Asteroids(x, y, ast_size, level, sfx)
     return {
         x = x,
         y = y,
-        x_vel = math.random() * ASTEROID_SPEED * vel,
-        y_vel = math.random() * ASTEROID_SPEED * vel,
-        radius = math.ceil(ast_size / 2),
+        x_vel = math.random() * Enemy_speed * vel,
+        y_vel = math.random() * Enemy_speed * vel,
+        radius = math.ceil(enemy_size / 2),
         angle = math.rad(math.random(math.pi)),
         vert = vert,
         offset = offset,
@@ -77,18 +77,18 @@ function Asteroids(x, y, ast_size, level, sfx)
             end
         end,
 
-        destroy = function(self, asteroids_tbl, index, game)
-            local MIN_ASTEROID_SIZE = math.ceil(ASTEROID_SIZE / 8)
+        destroy = function(self, enemies_table, index, game)
+            local Min_enemy_size = math.ceil(Enemy_size / 8)
 
-            if self.radius > MIN_ASTEROID_SIZE then
+            if self.radius > Min_enemy_size then
                 -- pass in sfx to asteroids
-                table.insert(asteroids_tbl, Asteroids(self.x, self.y, self.radius, game.level, sfx))
-                table.insert(asteroids_tbl, Asteroids(self.x, self.y, self.radius, game.level, sfx))
+                table.insert(enemies_table, Enemies(self.x, self.y, self.radius, game.level, sfx))
+                table.insert(enemies_table, Enemies(self.x, self.y, self.radius, game.level, sfx))
             end
 
-            if self.radius >= ASTEROID_SIZE / 2 then
+            if self.radius >= Enemy_size / 2 then
                 game.score = game.score + 20
-            elseif self.radius <= MIN_ASTEROID_SIZE then
+            elseif self.radius <= Min_enemy_size then
                 game.score = game.score + 100
             else
                 game.score = game.score + 50
@@ -100,9 +100,9 @@ function Asteroids(x, y, ast_size, level, sfx)
 
             -- play asteroid destroy sfx
             --sfx:playFX("asteroid_explosion")
-            table.remove(asteroids_tbl, index)
+            table.remove(enemies_table, index)
         end
     }
 end
 
-return Asteroids
+return Enemies

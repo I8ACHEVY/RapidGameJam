@@ -8,8 +8,8 @@ function SFX()
 
     local effects = {
         ship_explosion = love.audio.newSource("assets/sounds/explosion_player.ogg", "static"),
-        asteroid_explosion = love.audio.newSource("assets/sounds/explosion_asteroid.ogg", "static"),
-        laser = love.audio.newSource("assets/sounds/laser.ogg", "static"),
+        enemy_explosion = love.audio.newSource("assets/sounds/explosion_asteroid.ogg", "static"),
+        bullet = love.audio.newSource("assets/sounds/laser.ogg", "static"),
         select = love.audio.newSource("assets/sounds/option_select.ogg", "static"),
         thruster = love.audio.newSource("assets/sounds/thruster_loud.ogg", "static"),
     }
