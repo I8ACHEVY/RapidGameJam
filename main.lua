@@ -1,173 +1,226 @@
-require("data/debug")
+MapSheet = {}
+FruitSheet = {}
+HighScore = {}
 
-require "globals"
+WindowWidth = 450
+WindowHeight = 630
+TitleScreen = nil
+Font = nil
+Map = nil
+Scale = 16
 
-local love = require "love"
+SoundVolume = 1
+Pause = false
+CurrentState = 'title'
+Level = 1
 
-local lume = require "data/lume"
-
-local Player = require "objects/player"
-local Game = require "screens/game"
-local Menu = require "screens/menu"
-local resetComplete = false -- if game needs to be reset
-local SFX = require "assets/sfx"
-
-math.randomseed(os.time())
-
-local function reset()
-    --local save_data = readJSON("save")
-
-    -- create the soundeffects
-    sfx = SFX()
-
-    -- added sfx here and into below objects
-    player = Player(3, sfx)
-    game = Game(sfx) --save_data,
-    menu = Menu(game, player, sfx)
-
-    destroy_enemy = false
-end
+CatchPoint = { 200, 400, 800, 1600, 12000 }
+ReadyTimer = 4.5
+Dots = 244
 
 function love.load()
-    love.mouse.setVisible(false)
+    require("debug")
+    require "pacMan"
+    require "ghosts"
+    require "pacManStates"
+    require "levels"
+    GetMaps = require('map')
 
-    mouse_x, mouse_y = 0, 0
+    love.math.setRandomSeed(love.timer.getTime())
+    love.graphics.setDefaultFilter('nearest')
+    love.keyboard.setKeyRepeat(true)
 
-    reset() -- reset now takes in sfx
+    love.window.setMode(WindowWidth, WindowHeight)
+    love.window.setTitle('LuaPacMan')
 
-    -- will play bgm, does not have to be inside reset(), since
-    -- it doesn't have to restart or anything when game over
-    sfx.playBGM()
+
+    Font = love.graphics.newFont('assets/fonts/emulogic.ttf', 8)
+    love.graphics.setFont(Font)
+
+    TitleScreen = love.graphics.newImage('assets/images/title.png')
+    SettingsScreen = love.graphics.newImage('assets/images/settings.png')
+    ScoreScreen = love.graphics.newImage('assets/images/highscore.png')
+    CreditScreen = love.graphics.newImage('assets/images/credit.png')
+
+    FruitAtlas = love.graphics.newImage('assets/images/fruits.png')
+
+    FruitSheet['cherries'] = love.graphics.newQuad(0 * 16, 0, 16, 16, FruitAtlas:getDimensions())
+    FruitSheet['strawberry'] = love.graphics.newQuad(1 * 16, 0, 16, 16, FruitAtlas:getDimensions())
+    FruitSheet['peach'] = love.graphics.newQuad(2 * 16, 0, 16, 16, FruitAtlas:getDimensions())
+    FruitSheet['apple'] = love.graphics.newQuad(3 * 16, 0, 16, 16, FruitAtlas:getDimensions())
+    FruitSheet['grapes'] = love.graphics.newQuad(4 * 16, 0, 16, 16, FruitAtlas:getDimensions())
+    FruitSheet['bell'] = love.graphics.newQuad(5 * 16, 0, 16, 16, FruitAtlas:getDimensions())
+    FruitSheet['galaxian'] = love.graphics.newQuad(6 * 16, 0, 16, 16, FruitAtlas:getDimensions())
+    FruitSheet['key'] = love.graphics.newQuad(6 * 16, 0, 16, 16, FruitAtlas:getDimensions())
+
+    MapAtlas = love.graphics.newImage('assets/images/pacmanSpriteSheet.png')
+
+    MapSheet[1] = love.graphics.newQuad(0 * 16, 0, 16, 16, MapAtlas:getDimensions())
+    MapSheet[2] = love.graphics.newQuad(1 * 16, 0, 16, 16, MapAtlas:getDimensions())
+    MapSheet[3] = love.graphics.newQuad(2 * 16, 0, 16, 16, MapAtlas:getDimensions())
+    MapSheet[4] = love.graphics.newQuad(3 * 16, 0, 16, 16, MapAtlas:getDimensions())
+    MapSheet[5] = love.graphics.newQuad(4 * 16, 0, 16, 16, MapAtlas:getDimensions())
+    MapSheet[6] = love.graphics.newQuad(5 * 16, 0, 16, 16, MapAtlas:getDimensions())
+    MapSheet[9] = love.graphics.newQuad(6 * 16, 0, 16, 16, MapAtlas:getDimensions())
+    MapSheet[8] = love.graphics.newQuad(7 * 16, 0, 16, 16, MapAtlas:getDimensions())
+
+    SoundIntro = love.audio.newSource('assets/sfx/pacman_beginning.wav', 'static')
+    SoundDnom = love.audio.newSource('assets/sfx/pacman_chomp.wav', 'static')
+    SoundDeath = love.audio.newSource('assets/sfx/pacman_death.wav', 'static')
+    SoundGnom = love.audio.newSource('assets/sfx/pacman_eatghost.wav', 'static')
+    SoundFnom = love.audio.newSource('assets/sfx/pacman_eatfruit.wav', 'static')
+    SoundPause = love.audio.newSource('assets/sfx/pacman_intermission.wav', 'static')
+    SoundExtra = love.audio.newSource('assets/sfx/pacman_extrapac.wav', 'static')
+
+    GetHighScore()
+
+    SoundIntro:play()
 end
-
--- KEYBINDINGS --
-function love.keypressed(key)
-    if game.state.running then
-        if key == "w" or key == "up" or key == "kp8" then
-            player.thrusting = true
-        end
-
-        if key == "space" or key == "down" or key == "kp5" then
-            player:shootBullet()
-        end
-
-        if key == "escape" then
-            game:changeGameState("paused")
-        end
-    elseif game.state.paused then
-        if key == "escape" then
-            game:changeGameState("running")
-        end
-    end
-end
-
-function love.keyreleased(key)
-    if key == "w" or key == "up" or key == "kp8" then
-        player.thrusting = false
-    end
-end
-
-function love.mousepressed(x, y, button, istouch, presses)
-    if button == 1 then
-        if game.state.running then
-            player:shootBullet()
-        else
-            clickedMouse = true
-        end
-    end
-end
-
--- KEYBINDINGS --
 
 function love.update(dt)
-    mouse_x, mouse_y = love.mouse.getPosition()
-
-    if game.state.running then
-        player:movePlayer(dt)
-
-        for ast_index, enemy in pairs(enemies) do
-            if not player.exploading and not player.invincible then
-                if calculateDistance(player.x, player.y, enemy.x, enemy.y) < player.radius + enemy.radius then
-                    player:expload()
-                    destroy_enemy = true
-                end
-            else
-                player.expload_time = player.expload_time - 1
-
-                if player.expload_time == 0 then
-                    if player.lives - 1 <= 0 then
-                        game:changeGameState("ended")
-                        return
-                    end
-
-                    -- add sfx to this player as well
-                    player = Player(player.lives - 1, sfx)
-                end
-            end
-
-            for _, bullet in pairs(player.bullets) do
-                if calculateDistance(bullet.x, bullet.y, enemy.x, enemy.y) < enemy.radius then
-                    bullet:expload()
-                    enemy:destroy(enemies, ast_index, game)
-                end
-            end
-
-            if destroy_enemy then
-                if player.lives - 1 <= 0 then
-                    if player.expload_time == 0 then
-                        destroy_enemy = false
-                        enemy:destroy(enemies, ast_index, game)
-                    end
-                else
-                    destroy_enemy = false
-                    enemy:destroy(enemies, ast_index, game)
-                end
-            end
-
-            enemy:move(dt, player.x, player.y)
-        end
-
-        if #enemies == 0 then
-            game.level = game.level + 1
-            game:startNewGame(player)
-        end
-    elseif game.state.menu then
-        menu:run(clickedMouse)
-        clickedMouse = false
-
-        -- this will reset everything to original state
-        if not resetComplete then
-            reset()
-            resetComplete = true
-        end
-    elseif game.state.ended then
-        -- we should reset the game
-        resetComplete = false
-    end
+    if Pause then return end
+    pacMan_states[CurrentState].update(dt)
 end
 
 function love.draw()
-    if game.state.running or game.state.paused then
-        player:drawLives(game.state.paused)
-        player:draw(game.state.paused)
+    pacMan_states[CurrentState].draw()
+end
 
-        for _, enemy in pairs(enemies) do
-            enemy:draw(game.state.paused)
+-- Extra Keyboard Options --
+
+function love.keypressed(key)
+    if key == 'm' then
+        if SoundVolume == 1 then
+            SoundVolume = 0
+        else
+            SoundVolume = 1
         end
-
-        game:draw(game.state.paused)
-    elseif game.state.menu then
-        menu:draw()
-    elseif game.state.ended then
-        game:draw()
+        love.audio.setVolume(SoundVolume)
     end
+    pacMan_states[CurrentState].keypressed(key)
+end
 
+-- Maps --
 
-    love.graphics.setColor(1, 1, 1, 1)
-
-    if not game.state.running then
-        love.graphics.circle("fill", mouse_x, mouse_y, 10)
+function DrawMap()
+    for a = 1, #Map do
+        for b = 1, #Map[a] do
+            aa = a - 1
+            bb = b - 1
+            local curChar = Map[a][b]
+            if curChar > 0 then
+                love.graphics.draw(MapAtlas, MapSheet[curChar], bb * Scale, aa * Scale, 0, 1, 1)
+            end
+            local collectChar = Collectable[a][b]
+            if collectChar > 0 then
+                love.graphics.draw(MapAtlas, MapSheet[collectChar], bb * Scale, aa * Scale, 0, 1, 1)
+            end
+            local fruitChar = Fruit[a][b]
+            if fruitChar > 0 then
+                love.graphics.draw(
+                    FruitAtlas, FruitSheet[Levels[Level].bonus],
+                    aa * Scale + Scale * 0.5,
+                    bb * Scale + Scale * 0.5,
+                    0, 1.6, 1.6,
+                    16 * 0.5, 16 * 0.5
+                )
+            end
+        end
     end
+end
 
-    love.graphics.print(love.timer.getFPS(), 10, 10)
+function Animation(self, dt)
+    self.animationTimer = self.animationTimer - dt
+    if self.animationTimer <= 0 then
+        self.animationTimer = 1 / self.fps
+        self.keyframe = self.keyframe + 1
+        if self.keyframe > self.numberFrame then self.keyframe = 1 end
+    end
+end
+
+function HandleDirection(self)
+    if self.direction == 'left' then
+        self.scaleSignX = -1
+        self.scaleSignY = 1
+        self.angle = 0
+    elseif self.direction == 'right' then
+        self.scaleSignX = -1
+        self.scaleSignY = -1
+        self.angle = math.pi
+    elseif self.direction == 'up' and self == pacMan then
+        self.scaleSignX = -1
+        self.scaleSignY = 1
+        self.angle = math.pi * 0.5
+    elseif self.direction == 'down' and self == pacMan then
+        self.scaleSignX = -1
+        self.scaleSignY = 1
+        self.angle = math.pi * 3 * 0.5
+    end
+end
+
+-- Greatest Number as Output --
+
+function Round(value)
+    local floor = math.floor(value)
+    if (value % 1 >= 0.5) then return floor + 1 end
+    return floor
+end
+
+-- Value range Safety --
+
+function Clamp(value, min, max)
+    if value < min then
+        return min
+    elseif value > max then
+        return max
+    else
+        return value
+    end
+end
+
+-- Saving High Score --
+
+function WriteScore()
+    local tmp = {}
+    tmp[1] = pacMan.score
+    for a = 1, #HighScore do
+        table.insert(tmp, HighScore[a])
+    end
+    local reset = ''
+    for a = 1, #tmp do
+        reset = reset .. tmp[a] .. '\n'
+    end
+    local file = io.open('highscore.score', 'w+')
+    f:write(reset)
+    f:close()
+end
+
+function FileExists(name)
+    local f = io.open(name, "r")
+    if f ~= nil then
+        io.close(f)
+        return true
+    else
+        return false
+    end
+end
+
+function LinesFrom(file)
+    if not FileExists(file) then return { 0 } end
+    Lines = {}
+    for line in io.lines(file) do
+        Lines[#Lines + 1] = tonumber(line)
+    end
+    return Lines
+end
+
+function GetHighScore()
+    if FileExists('highscore.score') then
+        HighScore = LinesFrom('highscore.score')
+    else
+        local file = io.open('highscore.score', 'w')
+        --       f:write('0')
+        f:close()
+        HighScore = { 0 }
+    end
 end
