@@ -124,7 +124,7 @@ function love.update(dt)
                 end
             end
 
-            enemy:move(dt)
+            enemy:move(dt, player.x, player.y)
         end
 
         if #enemies == 0 then

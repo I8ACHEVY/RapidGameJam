@@ -3,15 +3,15 @@ require "globals"
 local love = require "love"
 
 -- asteroids require sfx
-function Asteroids(x, y, ast_size, level, sfx)
-    local ASTEROID_VERT = 10
-    local ASTEROID_JAG = 0.4
-    local ASTEROID_SPEED = math.random(50) + (level * 2)
+function Enemies(x, y, ast_size, level, sfx)
+    local Enemy_vert = 5
+    local Enemy_jag = 0.4
+    local Enemy_speed = math.random(0.02) + (level * 0.5)
 
-    local vert = math.floor(math.random(ASTEROID_VERT + 1) + ASTEROID_VERT / 2)
+    local vert = math.floor(math.random(Enemy_vert + 1) + Enemy_vert / 2)
     local offset = {}
     for i = 1, vert + 1 do
-        table.insert(offset, math.random() * ASTEROID_JAG * 2 + 1 - ASTEROID_JAG)
+        table.insert(offset, math.random() * Enemy_jag * 2 + 1 - Enemy_jag)
     end
 
     local vel = -1
@@ -22,8 +22,8 @@ function Asteroids(x, y, ast_size, level, sfx)
     return {
         x = x,
         y = y,
-        x_vel = math.random() * ASTEROID_SPEED * vel,
-        y_vel = math.random() * ASTEROID_SPEED * vel,
+        x_vel = math.random() * Enemy_speed * vel,
+        y_vel = math.random() * Enemy_speed * vel,
         radius = math.ceil(ast_size / 2),
         angle = math.rad(math.random(math.pi)),
         vert = vert,
@@ -52,18 +52,48 @@ function Asteroids(x, y, ast_size, level, sfx)
                 "line",
                 points
             )
-
-            if show_debugging then
-                love.graphics.setColor(1, 0, 0)
-
-                love.graphics.circle("line", self.x, self.y, self.radius)
-            end
         end,
 
-        move = function(self, dt)
+        -- move = function(self, dt)
+        --     self.x = self.x + self.x_vel * dt
+        --     self.y = self.y + self.y_vel * dt
+
+        --     if self.x + self.radius < 0 then
+        --         self.x = love.graphics.getWidth() + self.radius
+        --     elseif self.x - self.radius > love.graphics.getWidth() then
+        --         self.x = -self.radius
+        --     end
+
+        --     if self.y + self.radius < 0 then
+        --         self.y = love.graphics.getHeight() + self.radius
+        --     elseif self.y - self.radius > love.graphics.getHeight() then
+        --         self.y = -self.radius
+        --     end
+        -- end,
+
+        move = function(self, dt, target_x, target_y)
+            -- Calculate direction to the target
+            local direction_x = target_x - self.x
+            local direction_y = target_y - self.y
+            local distance = math.sqrt(direction_x ^ 2 + direction_y ^ 2)
+
+            -- Avoid division by zero if the distance is very small
+            if distance > 0 then
+                -- Normalize direction vector
+                direction_x = direction_x / distance
+                direction_y = direction_y / distance
+
+                -- Set speed (adjust as needed)
+                local speed = 100 -- Change this value to control the speed
+                self.x_vel = direction_x * speed
+                self.y_vel = direction_y * speed
+            end
+
+            -- Update position based on velocity
             self.x = self.x + self.x_vel * dt
             self.y = self.y + self.y_vel * dt
 
+            -- Handle wrapping around screen edges
             if self.x + self.radius < 0 then
                 self.x = love.graphics.getWidth() + self.radius
             elseif self.x - self.radius > love.graphics.getWidth() then
@@ -77,18 +107,19 @@ function Asteroids(x, y, ast_size, level, sfx)
             end
         end,
 
-        destroy = function(self, asteroids_tbl, index, game)
-            local MIN_ASTEROID_SIZE = math.ceil(Enemy_size / 8)
+        ------------------------------------------------
+        destroy = function(self, enemies_table, index, game)
+            local Min_Enemy_Size = math.ceil(Enemy_size / 1)
 
-            if self.radius > MIN_ASTEROID_SIZE then
-                -- pass in sfx to asteroids
-                table.insert(asteroids_tbl, Asteroids(self.x, self.y, self.radius, game.level, sfx))
-                table.insert(asteroids_tbl, Asteroids(self.x, self.y, self.radius, game.level, sfx))
+            if self.radius > Min_Enemy_Size then
+                -- pass in sfx to enemy
+                table.insert(enemies_table, Enemies(self.x, self.y, self.radius, game.level, sfx))
+                table.insert(enemies_table, Enemies(self.x, self.y, self.radius, game.level, sfx))
             end
 
             if self.radius >= Enemy_size / 2 then
                 game.score = game.score + 20
-            elseif self.radius <= MIN_ASTEROID_SIZE then
+            elseif self.radius <= Min_Enemy_Size then
                 game.score = game.score + 100
             else
                 game.score = game.score + 50
@@ -98,11 +129,11 @@ function Asteroids(x, y, ast_size, level, sfx)
                 game.high_score = game.score
             end
 
-            -- play asteroid destroy sfx
-            --sfx:playFX("asteroid_explosion")
-            table.remove(asteroids_tbl, index)
+            -- play enemy destroy sfx
+            --sfx:playFX("enemy_explosion")
+            table.remove(enemies_table, index)
         end
     }
 end
 
-return Asteroids
+return Enemies

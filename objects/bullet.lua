@@ -23,7 +23,7 @@ function Bullet(x, y, angle)
 
             -- if bullet is not exploading
             if self.exploading < 1 then
-                love.graphics.setColor(1, 1, 1, opacity)
+                love.graphics.setColor(255, 0, 0, opacity)
                 -- set size of points in px (or dpi, idk)
                 love.graphics.setPointSize(3)
                 -- put point on screen
