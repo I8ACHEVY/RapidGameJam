@@ -33,7 +33,7 @@ pacMan.sprites = {
 function pacMan:update(dt)
     if self.isOnPillEffect then
         self.timer = self.timer + dt
-        if self.timer >= Levels[Level].fantomTime then
+        if self.timer >= levels[Level].fantomTime then
             self.isOnPillEffect = false
             self.successfulCatch = 0
             pacMan.atlas = love.graphics.newImage('assets/images/fantomesPacman5.png')
@@ -127,7 +127,7 @@ function pacMan:init()
     self.y = 27
     self.isOnPillEffect = false
     self.timer = 0
-    self.speedBoost = Levels[Level].pacManSpeed
+    self.speedBoost = levels[Level].pacManSpeed
     self.dirX = 0
     self.dirY = 0
     self.direction = "start"
@@ -144,7 +144,7 @@ function pacMan:collect(item)
     end
 
     if item == 'bonus' then
-        self.score = self.score + Levels[Level].bonusPoints
+        self.score = self.score + levels[Level].bonusPoints
         SoundFnom:play()
     elseif item == 8 then
         self.score = self.score + 10
@@ -158,7 +158,7 @@ function pacMan:collect(item)
         Ghost_red.blink = false
         pacMan.atlas = love.graphics.newImage('assets/images/fantomesPacman4.png')
 
-        self.speedBoost = Levels[Level].pacManFantomSpeed
+        self.speedBoost = levels[Level].pacManFantomSpeed
         SetState(Ghost_red, 'fantom')
 
 

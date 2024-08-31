@@ -283,17 +283,17 @@ end
 Ghost_red.update = function(self, dt)
     self.timer = self.timer + dt
     if self.state == 'chase' then
-        self.speedBoost = Levels[Level].ghostSpeed
+        self.speedBoost = levels[Level].ghostSpeed
         self.targetX, self.targetY = Round(pacMan.x), Round(pacMan.y)
-        if self.timer >= Levels[Level].chaseTime[self.chaseIter] then
+        if self.timer >= levels[Level].chaseTime[self.chaseIter] then
             self.chaseIter = self.chaseIter + 1
             if self.chaseIter > 4 then self.chaseIter = 4 end
             self.timer = 0
             SetState(self, 'scatter')
         end
     elseif self.state == 'scatter' then
-        self.speedBoost = Levels[Level].ghostSpeed
-        if self.timer >= Levels[Level].scatterTime[self.scatterIter] then
+        self.speedBoost = levels[Level].ghostSpeed
+        if self.timer >= levels[Level].scatterTime[self.scatterIter] then
             self.scatterIter = self.scatterIter + 1
             if self.scatterIter > 4 then
                 self.scatterIter = 4
@@ -303,14 +303,14 @@ Ghost_red.update = function(self, dt)
         end
         self.targetX, self.targetY = 25, 1
     elseif self.state == 'fantom' then
-        self.speedBoost = Levels[Level].ghostFantomSpeed
-        if self.timer >= Levels[Level].fantomTime then
-            pacMan.speedBoost = Levels[Level].pacManSpeed
+        self.speedBoost = levels[Level].ghostFantomSpeed
+        if self.timer >= levels[Level].fantomTime then
+            pacMan.speedBoost = levels[Level].pacManSpeed
             self.timer = 0
             self.blink = false
             self.blinkTime = 0
             SetState(self, 'chase')
-        elseif self.timer >= Levels[Level].fantomTime - 2 then
+        elseif self.timer >= levels[Level].fantomTime - 2 then
             self.blink = true
             self.blinkTime = self.blinkTime + 3 * dt
         end
@@ -336,7 +336,7 @@ Ghost_red.init = function(self)
     self.state = "scatter"
     self.targetX = 25
     self.targetY = 1
-    self.speedBoost = Levels[Level].ghostSpeed
+    self.speedBoost = levels[Level].ghostSpeed
     self.nextDecision = "right"
     self.nextX = 16
     self.nextY = 15
